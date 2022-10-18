@@ -3,15 +3,15 @@ import { fetchCountries } from './fetchCountries';
 import debounce from 'lodash.debounce';
 import Notiflix from 'notiflix';
 
+const DEBOUNCE_DELAY = 300;
+
 const inputEl = document.querySelector('#search-box');
 const countryListEl = document.querySelector('.country-list');
 const countryInfo = document.querySelector('.country-info');
 
-const DEBOUNCE_DELAY = 300;
+inputEl.addEventListener('input', debounce(countryInput, DEBOUNCE_DELAY));
 
-inputEl.addEventListener('input', debounce(sex, DEBOUNCE_DELAY));
-
-function sex(event) {
+function countryInput(event) {
   const country = event.target.value.trim();
 
   if (country === '') {
@@ -23,7 +23,7 @@ function sex(event) {
   fetchCountries(country)
     .then(data => {
       if (data.length > 10) {
-        Notiflix.Notify.info('Слишкм много вариантов для такого запроса...');
+        isBadSpecific();
         return;
       }
       if (data.length === 1) {
@@ -34,10 +34,8 @@ function sex(event) {
       countryInfo.innerHTML = '';
       renderCountriesList(data);
     })
-    .catch(error => {
-      countryListEl.innerHTML = '';
-      countryInfo.innerHTML = '';
-      Notiflix.Notify.failure('Нет такой страны, голова');
+    .catch(() => {
+      isIncorrectCounryName();
     });
 }
 
@@ -59,7 +57,6 @@ function renderCountriesList(countries) {
 }
 
 function renderCountry(country) {
-  console.log(country.languages);
   const murkup = `<div class="country-head">
         <img
           class="country-head-flag"
@@ -81,4 +78,16 @@ function renderCountry(country) {
       </p>`;
 
   countryInfo.innerHTML = murkup;
+}
+
+function isIncorrectCounryName() {
+  countryListEl.innerHTML = '';
+  countryInfo.innerHTML = '';
+  Notiflix.Notify.failure('Нет такой страны, голова');
+}
+
+function isBadSpecific() {
+  countryListEl.innerHTML = '';
+  countryInfo.innerHTML = '';
+  Notiflix.Notify.info('Слишкм много вариантов для такого запроса...');
 }
